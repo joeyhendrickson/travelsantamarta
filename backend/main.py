@@ -1,5 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 import openai
 import os
 from backend.supabase_client import supabase
@@ -15,7 +17,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount static files
+app.mount("/static", StaticFiles(directory="backend/static"), name="static")
+
 openai.api_key = os.getenv("OPENAI_API_KEY")
+
+@app.get("/")
+async def root():
+    return FileResponse("backend/static/index.html")
 
 @app.post("/chat")
 async def chat(request: Request):
