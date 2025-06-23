@@ -43,9 +43,9 @@ def save_to_supabase(data):
         print(f"Supabase error: {e}")
         return False
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/")
 async def root():
-    return """
+    return HTMLResponse(content="""
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -207,7 +207,7 @@ async def root():
         </script>
     </body>
     </html>
-    """
+    """)
 
 @app.post("/chat")
 async def chat(request: Request):
