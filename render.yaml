@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: travel-santa-marta-backend
+    env: python
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: SUPABASE_URL
+        value: https://mhsmbwxdqymfihcoludw.supabase.co
+      - key: SUPABASE_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oc21id3hkcXltZmloY29sdWR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1NzYyMDAsImV4cCI6MjA2NjE1MjIwMH0.HCLGMlkFIbWab40YOQoJRpS6sY7uyR-vxqaVQkNgBgA 

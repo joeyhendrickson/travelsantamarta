@@ -102,7 +102,7 @@ async def root():
             
             <div class="status">
                 <h3>✅ Backend Status</h3>
-                <p>FastAPI server is running successfully!</p>
+                <p>FastAPI server is running successfully on Render!</p>
             </div>
 
             <div class="api-test">
@@ -118,8 +118,8 @@ async def root():
 
             <div style="margin-top: 30px;">
                 <p><strong>Next Steps:</strong></p>
-                <p>1. Add your OpenAI API key to Vercel environment variables</p>
-                <p>2. Deploy the React frontend separately</p>
+                <p>1. Add your OpenAI API key to Render environment variables</p>
+                <p>2. Deploy the React frontend to Vercel</p>
                 <p>3. Connect the frontend to this backend API</p>
             </div>
         </div>
@@ -164,7 +164,7 @@ async def root():
                 try {
                     const response = await fetch('/');
                     if (response.ok) {
-                        responseDiv.textContent = '✅ Connection successful! Backend is running.';
+                        responseDiv.textContent = '✅ Connection successful! Backend is running on Render.';
                     } else {
                         responseDiv.textContent = `❌ Connection failed: ${response.status}`;
                     }
