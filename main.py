@@ -1,15 +1,25 @@
-from flask import Flask, request, jsonify, render_template_string
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+import openai
 import os
 import requests
-import json
 
-app = Flask(__name__)
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Supabase configuration
 SUPABASE_URL = "https://mhsmbwxdqymfihcoludw.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oc21id3hkcXltZmloY29sdWR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1NzYyMDAsImV4cCI6MjA2NjE1MjIwMH0.HCLGMlkFIbWab40YOQoJRpS6sY7uyR-vxqaVQkNgBgA"
 
-openai_api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 BASE_PROMPT = """
 You are a friendly travel assistant for TravelSantaMarta.com helping users plan a 1-week trip to Santa Marta, Colombia.
@@ -51,9 +61,9 @@ def save_to_supabase(data):
         print(f"Supabase error: {e}")
         return False
 
-@app.route('/')
-def root():
-    html_content = """
+@app.get("/")
+async def root():
+    return HTMLResponse(content="""
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -135,7 +145,7 @@ def root():
             
             <div class="status">
                 <h3>✅ Backend Status</h3>
-                <p>Flask server is running successfully!</p>
+                <p>FastAPI server is running successfully!</p>
             </div>
 
             <div class="api-test">
@@ -215,61 +225,36 @@ def root():
         </script>
     </body>
     </html>
-    """
-    return html_content
+    """)
 
-@app.route('/chat', methods=['POST'])
-def chat():
-    data = request.get_json()
+@app.post("/chat")
+async def chat(request: Request):
+    data = await request.json()
     user_message = data.get("message")
     context = data.get("context", {})
 
-    if not openai_api_key:
-        return jsonify({"reply": "OpenAI API key not configured. Please add OPENAI_API_KEY to environment variables."})
+    messages = [
+        {"role": "system", "content": BASE_PROMPT},
+        {"role": "user", "content": user_message}
+    ]
 
-    try:
-        # Simple OpenAI API call using requests
-        headers = {
-            "Authorization": f"Bearer {openai_api_key}",
-            "Content-Type": "application/json"
-        }
-        
-        payload = {
-            "model": "gpt-4",
-            "messages": [
-                {"role": "system", "content": BASE_PROMPT},
-                {"role": "user", "content": user_message}
-            ]
-        }
-        
-        response = requests.post(
-            "https://api.openai.com/v1/chat/completions",
-            headers=headers,
-            json=payload
-        )
-        
-        if response.status_code == 200:
-            result = response.json()
-            reply = result['choices'][0]['message']['content']
-            
-            # Save conversation to Supabase
-            save_to_supabase({
-                "lead_id": context.get("lead_id"),
-                "message": user_message,
-                "role": "user"
-            })
-            save_to_supabase({
-                "lead_id": context.get("lead_id"),
-                "message": reply,
-                "role": "assistant"
-            })
-            
-            return jsonify({"reply": reply})
-        else:
-            return jsonify({"reply": f"Error calling OpenAI API: {response.status_code}"})
-            
-    except Exception as e:
-        return jsonify({"reply": f"Error: {str(e)}"})
+    completion = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=messages
+    )
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000))) 
+    reply = completion.choices[0].message.content
+
+    # Save conversation to Supabase using direct HTTP requests
+    save_to_supabase({
+        "lead_id": context.get("lead_id"),
+        "message": user_message,
+        "role": "user"
+    })
+    save_to_supabase({
+        "lead_id": context.get("lead_id"),
+        "message": reply,
+        "role": "assistant"
+    })
+
+    return {"reply": reply} 
