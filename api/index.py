@@ -1,3 +1,6 @@
+# Travel Santa Marta AI Assistant - FastAPI Backend
+# Updated: OpenAI API key configured in Vercel environment variables
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
