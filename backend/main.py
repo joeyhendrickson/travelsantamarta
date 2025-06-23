@@ -3,7 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 import openai
 import os
-from backend.supabase_client import supabase
+import requests
+import json
 from backend.prompt_template import BASE_PROMPT
 
 app = FastAPI()
@@ -16,7 +17,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Supabase configuration
+SUPABASE_URL = "https://mhsmbwxdqymfihcoludw.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oc21id3hkcXltZmloY29sdWR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1NzYyMDAsImV4cCI6MjA2NjE1MjIwMH0.HCLGMlkFIbWab40YOQoJRpS6sY7uyR-vxqaVQkNgBgA"
+
 openai.api_key = os.getenv("OPENAI_API_KEY")
+
+def save_to_supabase(data):
+    """Save conversation to Supabase using direct HTTP requests"""
+    try:
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal"
+        }
+        
+        response = requests.post(
+            f"{SUPABASE_URL}/rest/v1/conversations",
+            headers=headers,
+            json=data
+        )
+        return response.status_code == 201
+    except Exception as e:
+        print(f"Supabase error: {e}")
+        return False
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
@@ -202,16 +227,16 @@ async def chat(request: Request):
 
     reply = completion.choices[0].message.content
 
-    # Optionally save conversation
-    supabase.table("conversations").insert({
+    # Save conversation to Supabase using direct HTTP requests
+    save_to_supabase({
         "lead_id": context.get("lead_id"),
         "message": user_message,
         "role": "user"
-    }).execute()
-    supabase.table("conversations").insert({
+    })
+    save_to_supabase({
         "lead_id": context.get("lead_id"),
         "message": reply,
         "role": "assistant"
-    }).execute()
+    })
 
     return {"reply": reply}
