@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Santa Marta Travel Guide palette */
+  --santa-cream: #F8F8F8;
+  --santa-teal: #1D6B6B;
+  --santa-teal-light: #3D9197;
+  --santa-teal-pale: #5AC4C2;
+  --santa-orange: #E68B3E;
+  --santa-orange-light: #FCE2B3;
+  --santa-sand: #F9D072;
+  --santa-sky: #FDD792;
+  --santa-forest: #377E5E;
+  --santa-olive: #5E8F6C;
+  --santa-palm: #2A6E4F;
+  --santa-terracotta: #C9724C;
+  --santa-earth: #A36B40;
+}
+
+@layer base {
+  body {
+    @apply bg-santa-cream text-santa-teal antialiased;
+  }
+
+  /* Ensure all elements are clickable by default */
+  * {
+    pointer-events: auto !important;
+  }
+
+  /* Specific override for body direct children if needed */
+  body > * {
+    pointer-events: auto !important;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-santa-teal text-white font-semibold rounded-lg shadow-md hover:bg-santa-teal-light focus:outline-none focus:ring-2 focus:ring-santa-teal focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  
+  .btn-secondary {
+    @apply px-6 py-3 bg-santa-orange-light text-santa-teal font-semibold rounded-lg shadow-sm hover:bg-santa-sand focus:outline-none focus:ring-2 focus:ring-santa-orange focus:ring-offset-2 transition-all duration-200;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl shadow-lg p-6 border border-santa-teal/20;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 border border-santa-teal/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-santa-teal focus:border-santa-teal transition-all duration-200;
+  }
+}
+
