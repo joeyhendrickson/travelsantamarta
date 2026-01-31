@@ -46,10 +46,11 @@ export default function ChatInterface() {
 
   const saveConversationToHistory = (conversationMessages: Message[]) => {
     if (conversationMessages.length === 0) return;
+    if (typeof window === 'undefined' || !window.localStorage) return;
 
     const conversationsKey = 'travel_santa_marta_conversations';
     const existingConversations: Conversation[] = JSON.parse(
-      localStorage.getItem(conversationsKey) || '[]'
+      window.localStorage.getItem(conversationsKey) || '[]'
     );
 
     const firstUserMessage = conversationMessages.find(m => m.role === 'user');
@@ -82,13 +83,14 @@ export default function ChatInterface() {
 
     // Keep only last 50 conversations
     const recentConversations = existingConversations.slice(0, 50);
-    localStorage.setItem(conversationsKey, JSON.stringify(recentConversations));
+    window.localStorage.setItem(conversationsKey, JSON.stringify(recentConversations));
     setConversations(recentConversations);
   };
 
   const loadConversationsFromHistory = () => {
+    if (typeof window === 'undefined' || !window.localStorage) return;
     const conversationsKey = 'travel_santa_marta_conversations';
-    const stored = localStorage.getItem(conversationsKey);
+    const stored = window.localStorage.getItem(conversationsKey);
     if (stored) {
       const parsed: Conversation[] = JSON.parse(stored);
       setConversations(parsed);
@@ -112,7 +114,9 @@ export default function ChatInterface() {
 
   const deleteConversation = (conversationId: string) => {
     const updated = conversations.filter(c => c.id !== conversationId);
-    localStorage.setItem('travel_santa_marta_conversations', JSON.stringify(updated));
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem('travel_santa_marta_conversations', JSON.stringify(updated));
+    }
     setConversations(updated);
     if (selectedConversation === conversationId) {
       startNewConversation();

@@ -6,8 +6,8 @@ let analyticsStore: any[] = [];
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const range = searchParams.get('range') || '30d';
+    const searchParams = request.nextUrl?.searchParams;
+    const range = searchParams?.get('range') || '30d';
 
     // Calculate date range
     const now = new Date();

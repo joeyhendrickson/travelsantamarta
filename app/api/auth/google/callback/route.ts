@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const code = request.nextUrl.searchParams.get('code');
+    const code = request.nextUrl?.searchParams?.get('code');
 
     if (!code) {
       return NextResponse.json(

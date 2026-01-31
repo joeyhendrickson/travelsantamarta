@@ -4,9 +4,11 @@ import { useState, useRef, useEffect } from 'react';
 
 interface AppMenuProps {
   onSelectApp: (app: string) => void;
+  /** When provided, "Download The Guide" triggers this and downloads the written guide immediately. */
+  onDownloadGuide?: () => void;
 }
 
-export default function AppMenu({ onSelectApp }: AppMenuProps) {
+export default function AppMenu({ onSelectApp, onDownloadGuide }: AppMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -27,9 +29,7 @@ export default function AppMenu({ onSelectApp }: AppMenuProps) {
   }, [isOpen]);
 
   const apps = [
-    { id: 'website-scanner', name: 'Website Scanner', icon: '🌐' },
-    { id: 'analytics', name: 'Analytics', icon: '📊' },
-    { id: 'youtube-transcriber', name: 'YouTube Transcriber', icon: '🎥' },
+    { id: 'download-guide', name: 'Download The Guide', icon: '📥' },
   ];
 
   return (
@@ -66,8 +66,12 @@ export default function AppMenu({ onSelectApp }: AppMenuProps) {
                 key={app.id}
                 type="button"
                 onClick={() => {
-                  onSelectApp(app.id);
                   setIsOpen(false);
+                  if (app.id === 'download-guide' && onDownloadGuide) {
+                    onDownloadGuide();
+                  } else {
+                    onSelectApp(app.id);
+                  }
                 }}
                 className="w-full px-4 py-3 text-left text-santa-teal hover:bg-santa-teal hover:text-white transition-colors flex items-center gap-3"
               >

@@ -6,6 +6,12 @@ import { sendBookingReportPdf } from '@/lib/email';
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
+    if (!formData) {
+      return NextResponse.json(
+        { error: 'Invalid form data' },
+        { status: 400 }
+      );
+    }
     const templateFile = formData.get('templateFile') as File;
     const sections = JSON.parse(formData.get('sections') as string);
     const outputFormat = formData.get('outputFormat') as string || 'same';

@@ -7,7 +7,7 @@ import { upsertToPinecone } from '@/lib/pinecone';
 export async function POST(request: NextRequest) {
   try {
     const folderId =
-      request.nextUrl.searchParams.get('folderId') ||
+      request.nextUrl?.searchParams?.get('folderId') ||
       process.env.GOOGLE_DRIVE_FOLDER_ID;
 
     if (!folderId) {

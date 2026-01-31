@@ -13,6 +13,12 @@ export interface DocumentSection {
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
+    if (!formData) {
+      return NextResponse.json(
+        { error: 'Invalid form data' },
+        { status: 400 }
+      );
+    }
     const file = formData.get('file') as File | null;
 
     if (!file) {

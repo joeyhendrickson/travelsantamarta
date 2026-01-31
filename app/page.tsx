@@ -2,15 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import ChatInterface from '@/components/ChatInterface';
-import GoogleDriveTest from '@/components/GoogleDriveTest';
 import DocumentBrowser from '@/components/DocumentBrowser';
+import BookNow from '@/components/BookNow';
 import AppMenu from '@/components/AppMenu';
-import WebsiteScanner from '@/components/WebsiteScanner';
-import Analytics from '@/components/Analytics';
-import YouTubeTranscriber from '@/components/YouTubeTranscriber';
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<'chat' | 'browser'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'book' | 'browser'>('chat');
   const [activeApp, setActiveApp] = useState<string | null>(null);
 
   useEffect(() => {
@@ -31,12 +28,30 @@ export default function Home() {
     setActiveTab('chat'); // Reset to default tab when switching apps
   };
 
+  const handleDownloadGuide = async () => {
+    try {
+      const res = await fetch('/api/guide');
+      if (!res?.ok) throw new Error('Download failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = res.headers?.get?.('Content-Disposition')?.match(/filename="?([^";]+)"?/)?.[1] ?? 'santa-marta-travel-guide.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Guide download failed:', err);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-santa-cream" style={{ pointerEvents: 'auto' }}>
       <div className="container mx-auto px-4 py-8 lg:py-12">
         <header className="mb-10 text-center relative">
           <div className="absolute top-0 right-0 z-10">
-            <AppMenu onSelectApp={handleAppSelect} />
+            <AppMenu onSelectApp={handleAppSelect} onDownloadGuide={handleDownloadGuide} />
           </div>
           {/* Cover-style title: THE / SANTA MARTA / TRAVEL GUIDE */}
           <h1 className="mb-3 font-extrabold uppercase tracking-tight">
@@ -78,6 +93,26 @@ export default function Home() {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                setActiveTab('book');
+              }}
+              className={`flex-1 min-w-[140px] py-3 px-6 rounded-xl font-semibold transition-all duration-300 ${
+                activeTab === 'book'
+                  ? 'bg-santa-teal text-white shadow-lg transform scale-105'
+                  : 'text-santa-teal hover:bg-santa-orange-light border border-santa-teal/20'
+              }`}
+            >
+              <span className="flex items-center justify-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Book now
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 console.log('Browser tab clicked');
                 setActiveTab('browser');
               }}
@@ -98,14 +133,10 @@ export default function Home() {
 
           {/* Tab Content */}
           <div className="bg-white rounded-2xl shadow-2xl p-6 lg:p-8 border-2 border-santa-teal/20">
-            {activeApp === 'website-scanner' ? (
-              <WebsiteScanner onBack={() => setActiveApp(null)} />
-            ) : activeApp === 'analytics' ? (
-              <Analytics onBack={() => setActiveApp(null)} />
-            ) : activeApp === 'youtube-transcriber' ? (
-              <YouTubeTranscriber onBack={() => setActiveApp(null)} />
-            ) : activeTab === 'chat' ? (
+            {activeTab === 'chat' ? (
               <ChatInterface />
+            ) : activeTab === 'book' ? (
+              <BookNow />
             ) : activeTab === 'browser' ? (
               <DocumentBrowser />
             ) : (

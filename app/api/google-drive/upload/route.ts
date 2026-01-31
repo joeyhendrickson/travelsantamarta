@@ -6,6 +6,12 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
+    if (!formData) {
+      return NextResponse.json(
+        { error: 'Invalid form data' },
+        { status: 400 }
+      );
+    }
     const file = formData.get('file') as File;
     const folderId = formData.get('folderId') as string | null;
 

@@ -9,12 +9,16 @@ export function getGoogleOAuthClient(): OAuth2Client {
     return oauth2Client;
   }
 
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI;
+  const clientId = process.env.GOOGLE_CLIENT_ID?.trim();
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim();
+  const redirectUri = process.env.GOOGLE_REDIRECT_URI?.trim();
 
   if (!clientId || !clientSecret) {
     throw new Error('Google OAuth credentials must be set');
+  }
+
+  if (!redirectUri) {
+    throw new Error('GOOGLE_REDIRECT_URI must be set (e.g. http://localhost:3003/api/auth/google/callback)');
   }
 
   oauth2Client = new OAuth2Client(clientId, clientSecret, redirectUri);
@@ -32,7 +36,10 @@ export function getGoogleOAuthClient(): OAuth2Client {
 
 export async function getGoogleDriveClient() {
   const auth = getGoogleOAuthClient();
-  
+  if (!auth) {
+    throw new Error('Google OAuth client could not be initialized');
+  }
+
   // Refresh access token if needed
   try {
     const { credentials } = await auth.refreshAccessToken();
@@ -65,12 +72,18 @@ export async function getGoogleDriveClient() {
     throw new Error(`Failed to refresh access token: ${errorMessage}. Make sure your refresh token is valid.`);
   }
 
-  return google.drive({ version: 'v3', auth });
+  const drive = google.drive({ version: 'v3', auth });
+  if (!drive?.files) {
+    throw new Error('Google Drive API client could not be initialized');
+  }
+  return drive;
 }
 
 export async function listFilesInFolder(folderId: string) {
   const drive = await getGoogleDriveClient();
-  
+  if (!drive?.files) {
+    throw new Error('Google Drive files API is not available');
+  }
   const response = await drive.files.list({
     q: `'${folderId}' in parents and trashed=false`,
     fields: 'files(id, name, mimeType, modifiedTime, exportLinks)',
@@ -81,7 +94,9 @@ export async function listFilesInFolder(folderId: string) {
 
 export async function exportGoogleDoc(fileId: string, mimeType: string): Promise<Buffer> {
   const drive = await getGoogleDriveClient();
-  
+  if (!drive?.files) {
+    throw new Error('Google Drive files API is not available');
+  }
   // Google Docs/Sheets/Slides need to be exported
   let exportMimeType = 'text/plain';
   
@@ -108,7 +123,9 @@ export async function exportGoogleDoc(fileId: string, mimeType: string): Promise
 
 export async function downloadFile(fileId: string): Promise<Buffer> {
   const drive = await getGoogleDriveClient();
-  
+  if (!drive?.files) {
+    throw new Error('Google Drive files API is not available');
+  }
   try {
     const response = await drive.files.get(
       { fileId, alt: 'media' },
@@ -145,7 +162,9 @@ export async function uploadFileToGoogleDrive(
   folderId?: string
 ): Promise<{ fileId: string; webViewLink?: string }> {
   const drive = await getGoogleDriveClient();
-  
+  if (!drive?.files) {
+    throw new Error('Google Drive files API is not available');
+  }
   const targetFolderId = folderId || process.env.GOOGLE_DRIVE_FOLDER_ID;
   
   if (!targetFolderId) {

@@ -7,11 +7,22 @@ export async function GET(request: NextRequest) {
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     const redirectUri = process.env.GOOGLE_REDIRECT_URI;
 
-    if (!clientId || !clientSecret) {
+    if (!clientId || !clientSecret || !redirectUri?.trim()) {
       return NextResponse.json(
-        { error: 'Google OAuth credentials not configured', details: 'GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must be set in environment variables' },
+        {
+          error: 'Google OAuth credentials not configured',
+          details: !redirectUri?.trim()
+            ? 'GOOGLE_REDIRECT_URI must be set in .env.local (e.g. http://localhost:3003/api/auth/google/callback)'
+            : 'GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must be set in environment variables',
+        },
         { status: 500 }
       );
+    }
+
+    // Use trimmed redirect URI so no stray spaces break Google's check
+    const redirectUriClean = redirectUri.trim();
+    if (redirectUriClean !== redirectUri) {
+      console.warn('GOOGLE_REDIRECT_URI had leading/trailing whitespace; using trimmed value.');
     }
 
     if (clientId.includes('YOUR_CLIENT_ID') || clientSecret.includes('YOUR_CLIENT_SECRET')) {
@@ -34,7 +45,12 @@ export async function GET(request: NextRequest) {
       prompt: 'consent',
     });
 
-    return NextResponse.json({ authUrl });
+    // Include redirect URI so you can verify it matches Google Cloud Console exactly
+    return NextResponse.json({
+      authUrl,
+      redirectUri: redirectUri.trim(),
+      hint: 'If Google shows "invalid request", add the redirectUri above exactly to Credentials → your OAuth client → Authorized redirect URIs',
+    });
   } catch (error) {
     console.error('Error generating auth URL:', error);
     return NextResponse.json(
