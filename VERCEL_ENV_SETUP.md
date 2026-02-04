@@ -38,14 +38,12 @@ This guide will help you add all the environment variables from your `.env.local
    ```
 
 6. **Important Notes:**
-   - **GOOGLE_REDIRECT_URI**: Make sure this matches your Vercel production URL:
-     - If your Vercel URL is `https://travel-santa-marta-xyz.vercel.app`, use:
-       `https://travel-santa-marta-xyz.vercel.app/api/auth/google/callback`
-     - OR use your custom domain if you have one set up
+   - **GOOGLE_REDIRECT_URI**: Must match your Vercel production URL:
+     - Production: `https://travel-santa-marta-agent-joey-hendricksons-projects.vercel.app/api/auth/google/callback`
+     - Also add this exact URI in Google Cloud Console → Credentials → your OAuth client → Authorized redirect URIs
    
-   - **NEXT_PUBLIC_APP_URL**: Should be your production Vercel URL:
-     - Example: `https://travel-santa-marta-xyz.vercel.app`
-     - OR your custom domain
+   - **NEXT_PUBLIC_APP_URL**: Your production Vercel URL:
+     - `https://travel-santa-marta-agent-joey-hendricksons-projects.vercel.app`
 
 7. **Save and Redeploy:**
    - After adding all variables, click **"Save"**

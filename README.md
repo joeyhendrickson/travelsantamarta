@@ -41,7 +41,9 @@ See `.env.local.example` for all required environment variables.
 
 ## Deployment
 
-This application is configured for deployment on Vercel. Make sure to set all environment variables in your Vercel project settings.
+- **Production:** https://travel-santa-marta-agent-joey-hendricksons-projects.vercel.app/
+- Pushing to `main` on GitHub triggers an automatic deploy on Vercel (see [DEPLOY.md](./DEPLOY.md)).
+- Set all environment variables in your Vercel project (see [VERCEL_ENV_SETUP.md](./VERCEL_ENV_SETUP.md)).
 
 ## Project Structure
 
